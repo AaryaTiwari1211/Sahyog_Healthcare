@@ -3,7 +3,6 @@ import icon from '../assets/user-icon.png'
 import { Typography } from '@material-tailwind/react';
 import { CiBellOn } from "react-icons/ci";
 import { CiMenuBurger } from "react-icons/ci";
-import { useAuth } from '@arcana/auth-react'
 import { useNavigate } from 'react-router-dom';
 
 
@@ -15,8 +14,6 @@ const Navbar = () => {
         console.log('clicked')
     }
 
-    const { user } = useAuth();
-
     // if (!isLoggedIn) {
     //     navigate('/');
     // }
@@ -27,14 +24,14 @@ const Navbar = () => {
     // }, [user]);
 
     return (
-        <div className='flex justify-between fixed w-screen top-0 backdrop-blur-lg z-50 '>
-            <div className='left flex mt-6 ml-4 mb-3 '>
+        <div className='fixed top-0 z-50 flex justify-between w-screen backdrop-blur-lg '>
+            <div className='flex mt-6 mb-3 ml-4 left '>
                 <div className='pfp '>
-                    <img src={user ? user.picture : icon} alt="" className='w-[46px] h-[46px] rounded-full' />
+                    <img alt="" className='w-[46px] h-[46px] rounded-full' />
                 </div>
-                <div className='text flex flex-col ml-1  '>
+                <div className='flex flex-col ml-1 text '>
                     <Typography color='white' className='font-semibold' variant='h6'>
-                        Welcome, {user?.name}
+                        Welcome
                     </Typography>
                     <Typography color='white' variant='small' className='font-'>
                         Mumbai, India
@@ -42,7 +39,7 @@ const Navbar = () => {
 
                 </div>
             </div>
-            <div className='right flex mt-8 gap-3 mr-8'>
+            <div className='flex gap-3 mt-8 mr-8 right'>
                 <CiBellOn onClick={clickHandler} color='white' className='w-[28px] h-[28px]' />
                 <CiMenuBurger color='white' className='w-[28px] h-[28px]' />
             </div>

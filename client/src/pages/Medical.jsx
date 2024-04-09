@@ -6,8 +6,7 @@ import { useDropzone } from 'react-dropzone';
 import { TiDelete } from "react-icons/ti";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from '../components/FirebaseSDK';
-import { Interaction } from '../components/contract/Interaction';
-import { useContext } from 'react';
+// import { Interaction } from '../components/contract/Interaction';
 
 const DropBox = ({ onFilesDrop, onDeleteFile }) => {
     const [previewImages, setPreviewImages] = useState([]);
@@ -95,8 +94,6 @@ const Medical = () => {
     const [urls, setUrls] = useState([]);
     const navigate = useNavigate();
 
-    const { storeMedicalDetails, loading } = useContext(Interaction);
-
     const handleDrop = (acceptedFiles) => {
         console.log('Files accepted: ', acceptedFiles);
         setFiles(acceptedFiles);
@@ -139,14 +136,6 @@ const Medical = () => {
                     <Spinner color="blue" className='w-12 h-12' />
                     <Typography color="white" className="text-xl ">
                         Uploading...
-                    </Typography>
-                </div>
-            )}
-            {loading && (
-                <div className="fixed top-0 left-0 z-[99999] w-screen h-screen flex flex-col justify-center items-center backdrop-blur-md bg-black bg-opacity-50">
-                    <Spinner color="blue" className='w-12 h-12' />
-                    <Typography color="white" className="text-xl ">
-                        Uploading To BlockChain...
                     </Typography>
                 </div>
             )}

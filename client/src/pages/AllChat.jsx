@@ -1,7 +1,7 @@
 // Chat.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@arcana/auth-react';
+// import { useAuth } from '@arcana/auth-react';
 import { addDoc, collection, onSnapshot, query, where } from 'firebase/firestore';
 import { getDocs, setDoc , doc } from 'firebase/firestore';
 import { db } from '../components/FirebaseSDK';

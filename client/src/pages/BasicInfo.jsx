@@ -4,40 +4,24 @@ import { Button, Typography, Spinner } from '@material-tailwind/react';
 import { FaUpload } from 'react-icons/fa';
 import { Input, Select, Option } from '@material-tailwind/react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@arcana/auth-react';
-import { Interaction } from '../components/contract/Interaction';
+// import { useAuth } from '@arcana/auth-react';
+// import { Interaction } from '../components/contract/Interaction';
 
 const BasicInfo = () => {
     const navigate = useNavigate();
     const [isFormValid, setIsFormValid] = useState(false);
-    const { storeUserDetails, loading } = useContext(Interaction);
-    const { user } = useAuth();
 
-    const [userName, setUserName] = useState(user?.name);
-    const [userEmail, setUserEmail] = useState(user?.email);
+    const [userName, setUserName] = useState("");
+    const [userEmail, setUserEmail] = useState(""); 
     const [userGender, setUserGender] = useState("");
     const [userPhone, setUserPhone] = useState("");
     const [userAge, setUserAge] = useState();
-    
-    useEffect(() => {
-        setUserName(user?.name);
-        setUserEmail(user?.email);
-    }, [user]);
 
-    useEffect(() => {
-        if (userName && userEmail && userGender && userPhone) {
-            setIsFormValid(true);
-        } else {
-            setIsFormValid(false);
-        }
-        console.log(user);
-    })
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        storeUserDetails(userAge, userGender, userName, userPhone);
-        console.log(userAge, userGender, userName, userPhone);
-    };
+    // const handleSubmit = (e) => {
+    //     e.preventDefault();
+    //     storeUserDetails(userAge, userGender, userName, userPhone);
+    //     console.log(userAge, userGender, userName, userPhone);
+    // };
 
     return (
         <>

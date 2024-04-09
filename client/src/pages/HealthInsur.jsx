@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from '../components/FirebaseSDK';
-import { Interaction } from '../components/contract/Interaction';
 import { useContext } from 'react';
 
 const DropBox = ({ onFilesDrop }) => {
@@ -80,8 +79,6 @@ const HealthInsur = () => {
     const [files, setFiles] = useState([]);
     const [urls, setUrls] = useState([]);
 
-    const { storeInsuranceDetails, loading } = useContext(Interaction);
-
     const handleDrop = (acceptedFiles) => {
         console.log('Files accepted: ', acceptedFiles);
         setFiles(acceptedFiles);
@@ -91,28 +88,6 @@ const HealthInsur = () => {
     const handleInsuranceSubmit = async () => {
         console.log('ok');
         setLoadingFB(true);
-        const uploadPromises = files.map(async (file) => {
-            const storageRef = ref(storage, `records/${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file);
-            console.log('Uploaded a blob or file!');
-            
-            try {
-                const url = await getDownloadURL(snapshot.ref);
-                setUrls((prevUrls) => [...prevUrls, url]);
-                console.log(url);
-                await storeInsuranceDetails(url);
-            } catch (error) {
-                console.error(`Failed to get download URL: ${error}`);
-            }
-        });
-
-        Promise.all(uploadPromises)
-            .then(() => {
-                setLoadingFB(false);
-            })
-            .catch((error) => {
-                console.error(`Failed to upload some files: ${error}`);
-            });
     }
 
     return (
@@ -122,15 +97,6 @@ const HealthInsur = () => {
                     <Spinner color="blue" className='w-12 h-12' />
                     <Typography color="white" className="text-xl ">
                         Uploading...
-                    </Typography>
-                </div>
-            )}
-
-            {loading && (
-                <div className="fixed top-0 left-0 z-[99999] w-screen h-screen flex flex-col justify-center items-center backdrop-blur-md bg-black bg-opacity-50">
-                    <Spinner color="blue" className='w-12 h-12' />
-                    <Typography color="white" className="text-xl ">
-                        Uploading To BlockChain...
                     </Typography>
                 </div>
             )}

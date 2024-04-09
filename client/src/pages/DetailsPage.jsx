@@ -4,8 +4,6 @@ import { Typography } from '@material-tailwind/react'
 import { Button } from '@material-tailwind/react';
 import { FaChevronRight } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
-import { Interaction } from '../components/contract/Interaction';
-import { useContext } from 'react';
 
 const DetailButton = ({ text, onClick }) => {
     return (
@@ -17,7 +15,6 @@ const DetailButton = ({ text, onClick }) => {
 }
 
 const DetailsPage = () => {
-    const { user } = useContext(Interaction);
     // const { form1, form2, form3, updateFormData } = useFormContext();
     // useEffect(() => {
     //     console.log(form1);
