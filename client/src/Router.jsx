@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import Home from './pages/Home';
-import Login from './context/AuthContext';
+import Login from './pages/Login';
 import DetailsPage from './pages/DetailsPage';
 import Intro from './pages/Intro';
 import ChatPDF from './pages/ChatPDF';
@@ -17,7 +17,6 @@ import Cal from './components/Calendar/Cal';
 import Chat from './pages/AllChat';
 // import DoctorChat from './pages/DoctorChat';
 import Notes from './components/Calendar/Notes';
-
 // import { Interaction } from './components/contract/Interaction';
 import { useContext } from 'react';
 import { MedMatch } from './pages/MedMatch';
@@ -28,7 +27,7 @@ export const Router = () => {
         <>
             <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login onLoginNavigateTo="/intro" />} />
+                <Route path="/login" element={<Login />} />
                 <Route path="/details" element={<DetailsPage />} />
                 <Route path="/intro" element={<Landing />} />
                 <Route path="/spaces" element={<ChatPDF />} />

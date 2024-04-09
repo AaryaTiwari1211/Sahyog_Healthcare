@@ -1,16 +1,12 @@
 import { Typography, Input, Button } from '@material-tailwind/react';
-import React from 'react';
-// import { FaSearch, FaUserCircle } from 'react-icons/fa';
-// import { CiBellOn } from 'react-icons/ci';
-// import { BsStars } from "react-icons/bs";
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import portrait from '../../assets/portrait.jpg';
 import bannerLanding from '../../assets/banner-landing.png';
 import Appbar from '../../components/appbar/Appbar';
 import Navbar from '../../components/Navbar';
-import './Landing.css';
 import routinePhoto from "../../assets/routines.png"
-// import ReactPlayer from 'react-player/youtube';
+import { useUser } from '@clerk/clerk-react';
 
 const PersonCard = ({ photoSrc, id, name, degree, clickFunc }) => {
     return (
@@ -85,14 +81,17 @@ const Landing = () => {
     const handleClick = () => {
         navigate('/spaces')
     }
-    // const videoUrl = 'https://www.youtube.com/watch?v=QFbupLSlPLE&pp=ygUNeW9nYSBhbmQgbGlmZQ%3D%3D';
-    //   const thumbnailUrl = 'URL_TO_THUMBNAIL_IMAGE';
-
-    // const navigate = useNavigate();
     const navigate = useNavigate();
     const clickhandler = (id, photoSrc) => {
         navigate(`/specialist/${id}`, { state: { photoSrc } });
     };
+    const user = useUser();
+
+    useEffect(() => {
+        if (user) {
+            console.log(user);
+        }
+    }, []);
 
     return (
         <div className='flex flex-col'>
@@ -103,22 +102,6 @@ const Landing = () => {
                     <Typography color='white' className='text-3xl font-bold font-inter'>For You</Typography>
                     <div className='rounded-[20px]' id='banner'>
                         <div className='flex items-center justify-between h-full px-5'>
-                            {/* <div className='flex flex-col gap-3 m-1'>
-                                <div>
-                                    <Typography color='white' className='text-xl font-bold font-inter'>
-                                        Feeling a bit out of Mood?
-                                    </Typography>
-                                    <Typography color='white' className='text-xl font-bold font-inter'>
-                                        Talk to us!
-                                    </Typography>
-                                </div>
-                                <div className='w-full h-[30px] bg-white flex items-center justify-center rounded-[20px]'>
-                                    <Typography color='blue' className='m-2 text-lg font-bold font-inter'>
-                                        Sahyog Chat
-                                    </Typography>
-                                    <BsStars color='yellow' fontSize={25} />
-                                </div>
-                            </div> */}
                             <img src={bannerLanding} alt='banner' className='scale-125' onClick={handleClick} />
 
                         </div>

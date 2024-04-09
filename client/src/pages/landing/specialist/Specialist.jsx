@@ -9,12 +9,10 @@ import { doc, getDoc, getDocs, collection } from 'firebase/firestore';
 import { db } from '../../../components/FirebaseSDK'
 import { useNavigate } from 'react-router-dom';
 import { query, where, addDoc } from 'firebase/firestore';
-import { useAuth } from '@arcana/auth-react';
 
 
 const Specialist = () => {
     const [specialists, setSpecialists] = useState([]);
-    const { user } = useAuth();
     const [currentSpecialist, setCurrentSpecialist] = useState({});
     const [chats, setChats] = useState([]);
     const navigate = useNavigate();
@@ -38,7 +36,7 @@ const Specialist = () => {
         try {
             const filteredChats = chats.filter(chat => {
                 const chatUsers = chat.users;
-                return chatUsers.includes(currentSpecialist.userID) && chatUsers.includes(user.publicKey);
+                return chatUsers.includes(currentSpecialist.userID);
             });
             console.log('Filtered chats:', filteredChats);
             if (filteredChats.length > 0) {
@@ -47,7 +45,7 @@ const Specialist = () => {
                 navigate(`/chat/${existingChatId}`);
             } else {
                 const chatDocRef = await addDoc(collection(db, 'chats'), {
-                    users: [user.publicKey, currentSpecialist.userID],
+                    users: [currentSpecialist.userID],
                     messages: [],
                 });
                 console.log('New chat created with ID:', chatDocRef.id);
