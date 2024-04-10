@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // import { useAuth } from '@arcana/auth-react';
 import { addDoc, collection, onSnapshot, query, where } from 'firebase/firestore';
-import { getDocs, setDoc , doc } from 'firebase/firestore';
+import { getDocs, setDoc, doc } from 'firebase/firestore';
 import { db } from '../components/FirebaseSDK';
 import { FiMessageSquare, FiUser, FiCheck, FiSend } from 'react-icons/fi'
 import { IconButton } from '@material-tailwind/react';

@@ -7,6 +7,8 @@ import Appbar from '../../components/appbar/Appbar';
 import Navbar from '../../components/Navbar';
 import routinePhoto from "../../assets/routines.png"
 import { useUser } from '@clerk/clerk-react';
+import { db } from '../../components/FirebaseSDK';
+import { collection, getDoc, setDoc, getDocs } from 'firebase/firestore';
 
 const PersonCard = ({ photoSrc, id, name, degree, clickFunc }) => {
     return (
@@ -21,60 +23,6 @@ const PersonCard = ({ photoSrc, id, name, degree, clickFunc }) => {
         </div>
     );
 };
-// const YouTubeThumbnail = ({ videoUrl, thumbnailUrl }) => {
-//     const [showVideo, setShowVideo] = useState(false);
-
-//     const playVideo = () => {
-//       setShowVideo(true);
-//     };
-
-//     return (
-//       <div className="video-container" onClick={playVideo}>
-//         {!showVideo && <img src={thumbnailUrl} alt="Video Thumbnail" />}
-//         {showVideo && (
-//           <ReactPlayer
-//             url={videoUrl}
-//             width="100%"
-//             height="100%"
-//             controls
-//             playing
-//           />
-//         )}
-//       </div>
-//     );
-//   };
-
-// const YouTubeThumbnail = ({ videoUrl }) => {
-//     const [thumbnailUrl, setThumbnailUrl] = useState('');
-
-//     useEffect(() => {
-//       const videoId = getVideoId(videoUrl);
-
-//       if (videoId) {
-//         const generatedThumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-//         setThumbnailUrl(generatedThumbnailUrl);
-//       }
-//     }, [videoUrl]);
-
-//     const getVideoId = (url) => {
-//       const match = url.match(/[?&]v=([^&]+)/);
-//       return match ? match[1] : null;
-//     };
-
-//     return (
-//       <div className="video-container">
-//         {thumbnailUrl && (
-//           <ReactPlayer
-//             url={videoUrl}
-//             width="100%"
-//             height="100%"
-//             controls
-//           />
-//         )}
-//       </div>
-//     );
-//   };
-
 
 const Landing = () => {
 
@@ -87,23 +35,38 @@ const Landing = () => {
     };
     const user = useUser();
 
-    useEffect(() => {
-        if (user) {
-            console.log(user);
+    useEffect(async () => {
+        if (user.user) {
+            console.log(user.user);
+            const userDocRef = collection(db, 'users',user.user.id);
+            const docSnap = await getDoc(userDocRef);
+            console.log(docSnap);
+            if (!docSnap.exists()) {
+                setDoc(userDocRef, {
+                    name: user.user.fullName,
+                    email: user.user.emailAddresses[0].emailAddress,
+                    age: '',
+                });
+            }
+            else {
+                console.log('User already exists');
+            }
+        }
+        else{
+            console.log('User not found');
         }
     }, []);
 
     return (
         <div className='flex flex-col'>
             <Navbar />
-            <div className='flex flex-col gap-16 mt-20 mx-7 md:mx-40'>
+            <div className='flex flex-col gap-16 mx-4 mt-10'>
                 <div className='flex flex-col gap-5' />
                 <div className='flex flex-col gap-5'>
                     <Typography color='white' className='text-3xl font-bold font-inter'>For You</Typography>
                     <div className='rounded-[20px]' id='banner'>
                         <div className='flex items-center justify-between h-full px-5'>
                             <img src={bannerLanding} alt='banner' className='scale-125' onClick={handleClick} />
-
                         </div>
                     </div>
                 </div>
@@ -130,22 +93,13 @@ const Landing = () => {
                         <img src={routinePhoto} alt='banner' className='' />
                     </div>
                 </div>
-                <div className='flex flex-col gap-4 mt-[-50px] mb-32'>
+                <div className='flex flex-col gap-4 mb-32'>
                     <div>
                         <Typography color='white' className='text-3xl font-bold font-inter'>Communities and Resources </Typography>
                     </div>
-                    <div className='flex flex-col gap-7'>
-                        {/* <img src={routinePhoto} alt='banner' className='scale-' /> */}
-                        {/* <iframe
-                            width="358"
-                            height="315"
-                            src="https://www.youtube.com/watch?v=QFbupLSlPLE&pp=ygUNeW9nYSBhbmQgbGlmZQ%3D%3D"
-                            frameborder="2"
-                            allowfullscreen
-                        ></iframe> */}
-                        {/* <YouTubeThumbnail videoUrl={videoUrl} /> */}
-                        <iframe width="358" height="200" src="https://www.youtube.com/embed/QFbupLSlPLE?si=3IxYw1T2vLLsQqpG" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                        <iframe width="358" height="200" src="https://www.youtube.com/embed/6ajmuRg2o3Q?si=voOqYUfOFt2PAB7W" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    <div className='flex flex-col border-box gap-7'>
+                        <iframe width="340" height="200" src="https://www.youtube.com/embed/QFbupLSlPLE?si=3IxYw1T2vLLsQqpG" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                        <iframe width="340" height="200" src="https://www.youtube.com/embed/6ajmuRg2o3Q?si=voOqYUfOFt2PAB7W" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                     </div>
                 </div>
             </div>

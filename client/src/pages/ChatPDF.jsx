@@ -134,9 +134,8 @@ const ChatPDF = () => {
                                         <div className="flex flex-col items-center justify-center gap-6 pt-5 pb-6">
                                             <FaUpload size={60} />
                                             <div className='flex flex-col gap-2 text-center'>
-                                                <p className="text-sm">
-                                                    <span className="text-md">Click to upload or drag and drop</span>
-                                                </p>
+                                                <input type='file' id='file' className='hidden' />
+                                                <p className="text-sm">DRAG AND DROP PDF FILE HERE</p>
                                                 <p className="text-sm">PDF FILE OF REPORT (MAX - 32MB)</p>
                                             </div>
                                         </div>
