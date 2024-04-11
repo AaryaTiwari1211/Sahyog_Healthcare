@@ -109,11 +109,11 @@ const Profile = () => {
                         </div>
                     </div>
                     <div className='grid grid-cols-2 gap-5 '>
-                        <Button size='sm' color='blue' className='text-md'>
-                            Revoke Access
+                        <Button size='sm' color='blue' className='text-md' onClick={() => navigate("/medicaldetails")}>
+                            Upload Medical Details
                         </Button>
-                        <Button size='sm' color='blue' className='text-md'>
-                            Allow Access
+                        <Button size='sm' color='blue' className='text-md' onClick={() => navigate("/healthinsurance")}>
+                            Upload Health Insurance
                         </Button>
                     </div>
                     <Button size='sm' color='red' className='mb-16 text-md' fullWidth onClick={handleSubmit}>

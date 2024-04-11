@@ -4,10 +4,14 @@ import { Typography } from '@material-tailwind/react'
 import { Button } from '@material-tailwind/react';
 import { FaChevronRight } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '@clerk/clerk-react';
+import { useState } from 'react';
+import { db } from '../components/FirebaseSDK';
+import { doc, getDoc } from 'firebase/firestore';
 
-const DetailButton = ({ text, onClick }) => {
+const DetailButton = ({ text, onClick, uploaded = false }) => {
     return (
-        <Button variant="outlined" color='white' className="flex flex-row justify-between p-6 text-sm font-normal bg-blue-500 font-inter whitespace-nowrap" onClick={onClick}>
+        <Button variant="outlined" color='white' className={`flex flex-row justify-between p-6 text-sm font-normal ${uploaded ? "bg-green-500" : " bg-blue-500"} font-inter whitespace-nowrap`} onClick={onClick}>
             {text}
             <FaChevronRight />
         </Button>
@@ -15,13 +19,35 @@ const DetailButton = ({ text, onClick }) => {
 }
 
 const DetailsPage = () => {
-    // const { form1, form2, form3, updateFormData } = useFormContext();
-    // useEffect(() => {
-    //     console.log(form1);
-    //     console.log(form2);
-    //     console.log(form3);
-    // })
     const navigate = useNavigate();
+    const [uploadedMedicalDetails, setUploadedMedicalDetails] = useState(false);
+    const [uploadedHealthInsur, setUploadedHealthInsur] = useState(false);
+    const user = useUser();
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const userDocRef = doc(db, 'users', user.user.id);
+            const docSnap = await getDoc(userDocRef);
+            if (docSnap.exists()) {
+                if (docSnap.data().medicalRecords) {
+                    setUploadedMedicalDetails(true);
+                    console.log('Medical Details are Uploaded');
+                }
+                if (docSnap.data().healthInsurance) {
+                    setUploadedHealthInsur(true);
+                    console.log('Health Insurance Details are Uploaded');
+                }
+                if (docSnap.data().name && docSnap.data().age && docSnap.data().uid) {
+                    console.log('Basic Info is Uploaded');
+                }
+            }
+            else {
+                console.log('No user data found');
+            }
+        }
+        if (user.user) {
+            fetchUserData();
+        }
+    }, [])
     return (
         <>
             <div className='flex flex-col gap-24 my-10 mx-7 items md:mx-60'>
@@ -35,8 +61,8 @@ const DetailsPage = () => {
                 </motion.div>
                 <div className='flex flex-col gap-8'>
                     <DetailButton text='Basic Medical Details' onClick={() => navigate('/basicinfo')} />
-                    <DetailButton text='Previous Diagnostic records' onClick={() => navigate('/medicaldetails')} />
-                    <DetailButton text='Health Insurance Details' onClick={() => navigate('/healthinsurance')} />
+                    <DetailButton text='Previous Diagnostic records' onClick={() => navigate('/medicaldetails')} uploaded={uploadedMedicalDetails} />
+                    <DetailButton text='Health Insurance Details' onClick={() => navigate('/healthinsurance')} uploaded={uploadedMedicalDetails} />
                     <Button variant="outlined" color='white' className="bg-blue-500 font-inter text-md" onClick={() => navigate('/landing')}>Skip</Button>
                 </div>
             </div>

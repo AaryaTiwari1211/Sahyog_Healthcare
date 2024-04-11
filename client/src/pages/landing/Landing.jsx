@@ -8,7 +8,7 @@ import Navbar from '../../components/Navbar';
 import routinePhoto from "../../assets/routines.png"
 import { useUser } from '@clerk/clerk-react';
 import { db } from '../../components/FirebaseSDK';
-import { collection, getDoc, setDoc, getDocs } from 'firebase/firestore';
+import { collection, getDoc, setDoc, getDocs, doc, addDoc } from 'firebase/firestore';
 
 const PersonCard = ({ photoSrc, id, name, degree, clickFunc }) => {
     return (
@@ -35,25 +35,26 @@ const Landing = () => {
     };
     const user = useUser();
 
-    useEffect(async () => {
-        if (user.user) {
-            console.log(user.user);
-            const userDocRef = collection(db, 'users',user.user.id);
+    useEffect(() => {
+        async function fetchUser() {
+            const userDocRef = doc(db, 'users', user.user.id);
             const docSnap = await getDoc(userDocRef);
-            console.log(docSnap);
-            if (!docSnap.exists()) {
-                setDoc(userDocRef, {
-                    name: user.user.fullName,
-                    email: user.user.emailAddresses[0].emailAddress,
-                    age: '',
-                });
+            if (docSnap.exists()) {
+                console.log(docSnap.data());
             }
             else {
-                console.log('User already exists');
+                setDoc(userDocRef, {
+                    name: user.user.fullName,
+                    uid: user.user.id,
+                    medicalRecords: [],
+                    healthInsurance: [],
+                })
+                console.log('Document does not exist , Created a new one');
             }
         }
-        else{
-            console.log('User not found');
+        if (user.user) {
+            console.log(user.user);
+            fetchUser();
         }
     }, []);
 

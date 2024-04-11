@@ -1,28 +1,68 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button, Typography, Spinner } from '@material-tailwind/react';
-import { FaUpload } from 'react-icons/fa';
 import { Input, Select, Option } from '@material-tailwind/react';
 import { useNavigate } from 'react-router-dom';
-// import { useAuth } from '@arcana/auth-react';
-// import { Interaction } from '../components/contract/Interaction';
+import { useUser } from '@clerk/clerk-react';
+import { db } from '../components/FirebaseSDK';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+
 
 const BasicInfo = () => {
+    const user = useUser();
     const navigate = useNavigate();
     const [isFormValid, setIsFormValid] = useState(false);
-
-    const [userName, setUserName] = useState("");
-    const [userEmail, setUserEmail] = useState(""); 
-    const [userGender, setUserGender] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [userName, setUserName] = useState(user?.user?.fullName);
+    const [userEmail, setUserEmail] = useState(user?.user?.primaryEmailAddress?.emailAddress);
+    const [userGender, setUserGender] = useState("Male");
     const [userPhone, setUserPhone] = useState("");
-    const [userAge, setUserAge] = useState();
+    const [userAge, setUserAge] = useState(78);
+    const [userDetails, setUserDetails] = useState(null);
 
-    // const handleSubmit = (e) => {
-    //     e.preventDefault();
-    //     storeUserDetails(userAge, userGender, userName, userPhone);
-    //     console.log(userAge, userGender, userName, userPhone);
-    // };
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const userDocRef = doc(db, 'users', user.user.id);
+            const docSnap = await getDoc(userDocRef);
+            if (docSnap.exists()) {
+                setUserDetails(docSnap.data());
+                setUserName(docSnap.data().name);
+                setUserEmail(docSnap.data().email);
+            }
+        }
+        if (user.user) {
+            fetchUserData();
+        }
+        if (userName && userEmail && userGender && userPhone && userAge) {
+            setIsFormValid(true);
+        }
+        else {
+            setIsFormValid(false);
+        }
+    }, [userName, userEmail, userGender, userPhone, userAge]);
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        if (!isFormValid) {
+            return;
+        }
+        try {
+            const userDocRef = doc(db, 'users', user.user.id);
+            await setDoc(userDocRef, {
+                name: userName,
+                email: userEmail,
+                gender: userGender,
+                phone: userPhone,
+                age: userAge,
+            }, { merge: true });
+            console.log('Basic Info Uploaded');
+            setLoading(false);
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
     return (
         <>
             {loading && (

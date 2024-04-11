@@ -3,9 +3,10 @@ import { Button, Typography, Spinner } from '@material-tailwind/react';
 import { FaUpload, FaFilePdf, FaFileWord } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from '../components/FirebaseSDK';
-import { useContext } from 'react';
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage , db } from '../components/FirebaseSDK';
+import { doc, setDoc } from 'firebase/firestore';
+import { useUser } from '@clerk/clerk-react';
 
 const DropBox = ({ onFilesDrop }) => {
     const [previewImages, setPreviewImages] = useState([]);
@@ -74,10 +75,11 @@ const DropBox = ({ onFilesDrop }) => {
 
 const HealthInsur = () => {
     const [hasFiles, setHasFiles] = useState(false);
-    const navigate = useNavigate();
     const [loadingfb, setLoadingFB] = useState(false);
+    const navigate = useNavigate();
     const [files, setFiles] = useState([]);
     const [urls, setUrls] = useState([]);
+    const user = useUser();
 
     const handleDrop = (acceptedFiles) => {
         console.log('Files accepted: ', acceptedFiles);
@@ -86,8 +88,22 @@ const HealthInsur = () => {
     };
 
     const handleInsuranceSubmit = async () => {
-        console.log('ok');
         setLoadingFB(true);
+        for (let i = 0; i < files.length; i++) {
+            const storageRef = ref(storage, `${user.user.id}/health-insurance/${files[i].name}`);
+            await uploadBytes(storageRef, files[i]).then((snapshot) => {
+                console.log('Uploaded a blob or file!', snapshot);
+            });
+            const url = await getDownloadURL(ref(storage, `${user.user.id}/health-insurance/${files[i].name}`));
+            console.log("Url is: ", url);
+            setUrls((prevUrls) => [...prevUrls, url]);
+        }
+        const userRef = doc(db, 'users', user.user.id);
+        await setDoc(userRef, { healthInsurance: urls }, { merge: true });
+        setLoadingFB(false);
+        console.log("Urls are: ", urls);
+        console.log('HealthInsurance Uploaded');
+        navigate('/details');
     }
 
     return (
@@ -107,9 +123,6 @@ const HealthInsur = () => {
                     <Typography className="text-3xl font-bold text-color1 font-inter">
                         Please upload your Health Insurance Details
                     </Typography>
-                    <Typography className="font-inter text-color2">
-                        Almost Done
-                    </Typography>
                 </div>
                 <div className="flex flex-col gap-10">
                     <DropBox onFilesDrop={handleDrop} />
@@ -118,7 +131,7 @@ const HealthInsur = () => {
                             type="submit"
                             color="blue"
                             className="text-white"
-                            onClick={() => handleInsuranceSubmit()}
+                            onClick={handleInsuranceSubmit}
                             disabled={!hasFiles}
                         >
                             Submit

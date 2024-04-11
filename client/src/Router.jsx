@@ -18,6 +18,8 @@ import Chat from './pages/AllChat';
 // import DoctorChat from './pages/DoctorChat';
 import Notes from './components/Calendar/Notes';
 import { MedMatch } from './pages/MedMatch';
+import { useUser } from '@clerk/clerk-react';
+import ProtectedRoute from './components/ProtectedRoute';
 
 export const Router = () => {
     return (
@@ -25,22 +27,21 @@ export const Router = () => {
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/details" element={<DetailsPage />} />
-                <Route path="/intro" element={<Landing />} />
+                <Route path="/details" element={<ProtectedRoute><DetailsPage /></ProtectedRoute>} />
                 <Route path="/spaces" element={<ChatPDF />} />
-                <Route path='/basicinfo' element={<BasicInfo />} />
-                <Route path='/medicaldetails' element={<Medical />} />
-                <Route path='/healthinsurance' element={<HealthInsur />} />
+                <Route path='/basicinfo' element={<ProtectedRoute><BasicInfo /></ProtectedRoute>} />
+                <Route path='/medicaldetails' element={<ProtectedRoute><Medical /></ProtectedRoute>} />
+                <Route path='/healthinsurance' element={<ProtectedRoute><HealthInsur /></ProtectedRoute>} />
                 <Route path='/landing' element={<Landing />} />
-                <Route path="/specialist/:id" element={<Specialist />} />
-                <Route path='/profile' element={<Profile />} />
+                <Route path="/specialist/:id" element={<ProtectedRoute><Specialist /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="/chat-pdf" element={<ChatPDF />} />
                 <Route path="/sos" element={<SOS />} />
-                <Route path="/calendar" element={<Cal />} />
-                <Route path="/allchat" element={<Chat />} />
-                <Route path="/notes/:date/:title/:text" element={<Notes />} />
+                <Route path="/calendar" element={<ProtectedRoute><Cal /></ProtectedRoute>} />
+                <Route path="/allchat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+                <Route path="/notes/:date/:title/:text" element={<ProtectedRoute><Notes /></ProtectedRoute>} />
+                <Route path="/medmatch-concierge" element={<ProtectedRoute><MedMatch /></ProtectedRoute>} />
                 {/* <Route path="/chat/:chatId" element={<DoctorChat />} /> */}
-                <Route path="/medmatch-concierge" element={<MedMatch />} />
             </Routes>
         </>
     );

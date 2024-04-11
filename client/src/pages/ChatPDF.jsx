@@ -13,46 +13,11 @@ import ChatUI from './ChatUI';
 import axios from 'axios';
 import FormData from 'form-data';
 import Appbar from '../components/appbar/Appbar';
-
-// export function DrawerDefault() {
-//     const navigate = useNavigate();
-//     const [open, setOpen] = useState(false);
-
-//     const openDrawer = () => setOpen(true);
-//     const closeDrawer = () => setOpen(false);
-
-//     return (
-//         <React.Fragment>
-//             <GiHamburgerMenu className='m-2 text-color1' onClick={openDrawer} size={30} />
-//             <Drawer open={open} onClose={closeDrawer} className="p-4">
-//                 <div>
-//                     <h2 className='text-center'>Existing Chats</h2>
-//                     <div className='flex flex-col justify-center gap-10 p-4 m-2'>
-//                         <PdfChat name="Report 1" lastMessage="This is the first report" />
-//                         <PdfChat name="Report 2" lastMessage="This is the second report" />
-//                         <PdfChat name="Report 3" lastMessage="This is the third report" />
-//                     </div>
-//                 </div>
-//             </Drawer>
-//         </React.Fragment>
-//     );
-// }
-
-// const PdfChat = ({ name, lastMessage, link }) => {
-//     const navigate = useNavigate();
-//     return (
-//         <div className='flex items-center gap-10' onClick={() => navigate('/')}>
-//             <FaFilePdf size={30} />
-//             <div className='flex flex-col justify-start'>
-//                 <h6>{name}</h6>
-//                 <p className='text-sm text-gray-500'>{lastMessage}</p>
-//             </div>
-//         </div>
-//     );
-// };
+import { useUser } from '@clerk/clerk-react';
 
 const ChatPDF = () => {
     const navigate = useNavigate();
+    const user = useUser();
     const [uploadedFile, setUploadedFile] = useState(null);
     const [submit, setSubmit] = useState(false);
     const [sourceId, setSourceId] = useState('');
@@ -66,30 +31,25 @@ const ChatPDF = () => {
         setSubmit(false);
     }
 
-    const onDrop = useCallback(async (acceptedFiles) => {
-        try {
-            console.log('Dropped files:', acceptedFiles);
-            setFileName(acceptedFiles[0].name);
-            const file = acceptedFiles[0];
-            const formData = new FormData();
-            formData.append('file', file);
+    const onDrop = async (acceptedFiles) => {
+        console.log('Dropped files:', acceptedFiles);
+        setFileName(acceptedFiles[0].name);
+        const file = acceptedFiles[0];
+        const formData = new FormData();
+        formData.append('file', file);
 
-            const responseFile = await axios.post('https://api.chatpdf.com/v1/sources/add-file', formData, {
-                headers: {
-                    'x-api-key': import.meta.env.VITE_CHATPDF_API_KEY,
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+        const responseFile = await axios.post('https://api.chatpdf.com/v1/sources/add-file', formData, {
+            headers: {
+                'x-api-key': import.meta.env.VITE_CHATPDF_API_KEY,
+                'Content-Type': 'multipart/form-data',
+            },
+        });
 
-            console.log("Source ID:", responseFile.data.sourceId);
-            setUploadedFile(file);
-            setSourceId(responseFile.data.sourceId);
-            setSubmit(true);
-        } catch (error) {
-            console.error('Error:', error.message);
-            console.error('Response:', error.response?.data);
-        }
-    }, []);
+        console.log("Source ID:", responseFile.data.sourceId);
+        setUploadedFile(file);
+        setSourceId(responseFile.data.sourceId);
+        setSubmit(true);
+    };
 
     const handleSummarize = () => {
         navigate('/medmatch-concierge');
@@ -97,7 +57,6 @@ const ChatPDF = () => {
 
     const handleChat = () => {
         setChatter(true);
-        // navigate('/chat-ui');
     }
 
 
@@ -134,7 +93,6 @@ const ChatPDF = () => {
                                         <div className="flex flex-col items-center justify-center gap-6 pt-5 pb-6">
                                             <FaUpload size={60} />
                                             <div className='flex flex-col gap-2 text-center'>
-                                                <input type='file' id='file' className='hidden' />
                                                 <p className="text-sm">DRAG AND DROP PDF FILE HERE</p>
                                                 <p className="text-sm">PDF FILE OF REPORT (MAX - 32MB)</p>
                                             </div>

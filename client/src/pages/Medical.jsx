@@ -5,8 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { TiDelete } from "react-icons/ti";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from '../components/FirebaseSDK';
-// import { Interaction } from '../components/contract/Interaction';
+import { storage, db } from '../components/FirebaseSDK';
+import { doc, setDoc } from 'firebase/firestore';
+import { useUser } from '@clerk/clerk-react';
 
 const DropBox = ({ onFilesDrop, onDeleteFile }) => {
     const [previewImages, setPreviewImages] = useState([]);
@@ -86,13 +87,13 @@ const DropBox = ({ onFilesDrop, onDeleteFile }) => {
     );
 };
 
-
 const Medical = () => {
     const [hasFiles, setHasFiles] = useState(false);
     const [loadingfb, setLoadingFB] = useState(false);
     const [files, setFiles] = useState([]);
     const [urls, setUrls] = useState([]);
     const navigate = useNavigate();
+    const user = useUser();
 
     const handleDrop = (acceptedFiles) => {
         console.log('Files accepted: ', acceptedFiles);
@@ -106,27 +107,22 @@ const Medical = () => {
 
     const handleRecordsSubmit = async () => {
         setLoadingFB(true);
-        const uploadPromises = files.map(async (file) => {
-            const storageRef = ref(storage, `records/${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file);
-            console.log('Uploaded a blob or file!');
-            try {
-                const url = await getDownloadURL(snapshot.ref);
-                setUrls((prevUrls) => [...prevUrls, url]);
-                console.log(url);
-                await storeMedicalDetails(url);
-            } catch (error) {
-                console.error(`Failed to get download URL: ${error}`);
-            }
-        });
-
-        Promise.all(uploadPromises)
-            .then(() => {
-                setLoadingFB(false);
-            })
-            .catch((error) => {
-                console.error(`Failed to upload some files: ${error}`);
+        for (let i = 0; i < files.length; i++) {
+            const storageRef = ref(storage, `${user.user.id}/medical-records/${files[i].name}`);
+            await uploadBytes(storageRef, files[i]).then((snapshot) => {
+                console.log('Uploaded a blob or file!', snapshot);
             });
+            const url = await getDownloadURL(ref(storage, `${user.user.id}/medical-records/${files[i].name}`));
+            console.log("Url is: ", url);
+            setUrls((prevUrls) => [...prevUrls, url]);
+            console.log("Urls are: ", urls);
+        }
+        const userRef = doc(db, 'users', user.user.id);
+        await setDoc(userRef, { medicalRecords: urls }, { merge: true });
+        setLoadingFB(false);
+        console.log(urls);
+        console.log('Medical Records Uploaded');
+        navigate('/details');
     }
 
     return (
@@ -148,9 +144,6 @@ const Medical = () => {
                 >
                     <Typography color="white" className="text-3xl font-bold font-inter">
                         Please upload your medical details
-                    </Typography>
-                    <Typography color="blue" className="font-inter">
-                        Don't Give up now !!
                     </Typography>
                 </div>
                 <div className="flex flex-col gap-4">
