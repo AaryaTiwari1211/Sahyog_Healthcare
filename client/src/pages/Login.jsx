@@ -5,7 +5,7 @@ import { SignIn } from '@clerk/clerk-react'
 import { dark } from "@clerk/themes";
 import { useUser } from "@clerk/clerk-react";
 import { db } from "../components/FirebaseSDK";
-import { collection, getDocs, setDoc, getDoc } from "firebase/firestore";
+import { collection, getDocs, setDoc, getDoc, doc } from "firebase/firestore";
 
 const Login = () => {
     const navigate = useNavigate();
@@ -14,6 +14,7 @@ const Login = () => {
         if (user.user) {
             navigate("/landing");
         }
+
     }, []);
 
     return (

@@ -20,6 +20,8 @@ import Notes from './components/Calendar/Notes';
 import { MedMatch } from './pages/MedMatch';
 import { useUser } from '@clerk/clerk-react';
 import ProtectedRoute from './components/ProtectedRoute';
+import { useEffect } from 'react';
+// import UserType from './pages/UserType';
 
 export const Router = () => {
     return (
@@ -41,7 +43,7 @@ export const Router = () => {
                 <Route path="/allchat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
                 <Route path="/notes/:date/:title/:text" element={<ProtectedRoute><Notes /></ProtectedRoute>} />
                 <Route path="/medmatch-concierge" element={<ProtectedRoute><MedMatch /></ProtectedRoute>} />
-                {/* <Route path="/chat/:chatId" element={<DoctorChat />} /> */}
+                {/* <Route path="/usertype" element={<ProtectedRoute><UserType /></ProtectedRoute>} /> */}
             </Routes>
         </>
     );

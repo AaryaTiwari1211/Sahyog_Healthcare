@@ -4,7 +4,7 @@ import { FaUpload, FaFilePdf, FaFileWord } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage , db } from '../components/FirebaseSDK';
+import { storage, db } from '../components/FirebaseSDK';
 import { doc, setDoc } from 'firebase/firestore';
 import { useUser } from '@clerk/clerk-react';
 
@@ -99,7 +99,9 @@ const HealthInsur = () => {
             setUrls((prevUrls) => [...prevUrls, url]);
         }
         const userRef = doc(db, 'users', user.user.id);
-        await setDoc(userRef, { healthInsurance: urls }, { merge: true });
+        await setDoc(userRef, {
+            healthInsurance: [...urls]
+        }, { merge: true });
         setLoadingFB(false);
         console.log("Urls are: ", urls);
         console.log('HealthInsurance Uploaded');
