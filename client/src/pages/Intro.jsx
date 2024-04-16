@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Button } from '@material-tailwind/react'
 import { useNavigate } from 'react-router'
-// import { Interaction } from '../components/contract/Interaction'
 
 const Intro = () => {
     const navigate = useNavigate()

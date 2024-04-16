@@ -60,7 +60,13 @@ const ChatPDF = () => {
     }
 
 
-    const { getRootProps, getInputProps } = useDropzone({ onDrop });
+    const { getRootProps, getInputProps } = useDropzone({ 
+        onDrop: onDrop,
+        accept: 'application/pdf',
+        maxFiles: 1,
+        multiple: false,
+        maxSize: 32 * 1024 * 1024,
+    });
 
     return (
         <>{

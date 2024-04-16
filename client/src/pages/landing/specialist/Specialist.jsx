@@ -5,11 +5,11 @@ import Appbar from '../../../components/appbar/Appbar';
 import docPhoto from '../../../assets/doctor.png';
 import { Button } from "@material-tailwind/react";
 import { Typography } from '@material-tailwind/react';
-import { doc, getDoc, getDocs, collection } from 'firebase/firestore';
+import { doc, getDoc, getDocs, collection, setDoc, addDoc } from 'firebase/firestore';
 import { db } from '../../../components/FirebaseSDK'
 import { useNavigate } from 'react-router-dom';
-import { query, where, addDoc } from 'firebase/firestore';
-
+import Loader from '../../../components/Loader';
+import { useUser } from '@clerk/clerk-react';
 
 const Specialist = () => {
     const [specialists, setSpecialists] = useState([]);
@@ -17,11 +17,11 @@ const Specialist = () => {
     const [chats, setChats] = useState([]);
     const navigate = useNavigate();
     const { id } = useParams();
-    const { name, degree, photoSrc } = window.history.state;
     const handlePhoneClick = () => {
         const phoneNumber = '1234567890'; // Replace with the actual phone number
         window.location.href = `tel:${phoneNumber}`;
     };
+    const user = useUser();
 
     useEffect(() => {
         const fetchChats = async () => {
@@ -30,13 +30,14 @@ const Specialist = () => {
             setChats(chatsData);
         };
         fetchChats();
-    },[])
+    }, [])
 
     const handleOnChat = async () => {
         try {
+            console.log(currentSpecialist.uid , user.user.id);
             const filteredChats = chats.filter(chat => {
                 const chatUsers = chat.users;
-                return chatUsers.includes(currentSpecialist.userID);
+                return chatUsers.includes(currentSpecialist.uid);
             });
             console.log('Filtered chats:', filteredChats);
             if (filteredChats.length > 0) {
@@ -45,7 +46,7 @@ const Specialist = () => {
                 navigate(`/chat/${existingChatId}`);
             } else {
                 const chatDocRef = await addDoc(collection(db, 'chats'), {
-                    users: [currentSpecialist.userID],
+                    users: [user.user.id, currentSpecialist.uid],
                     messages: [],
                 });
                 console.log('New chat created with ID:', chatDocRef.id);
@@ -66,16 +67,13 @@ const Specialist = () => {
 
     useEffect(() => {
         const fetchPosts = async () => {
-            const querySnapshot = await getDocs(collection(db, "specialists"));
-            const specialistsData = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-            const currentSpecialist = specialistsData[id];
-            setCurrentSpecialist(currentSpecialist);
-            console.log(currentSpecialist);
-            setSpecialists(specialistsData);
+            setLoading(true);
+            const specialistDocRef = doc(db, 'specialists', id);
+            const specialistDoc = await getDoc(specialistDocRef);
+            console.log('Specialist doc:', specialistDoc);
+            setCurrentSpecialist(specialistDoc.data());
             setLoading(false);
-            console.log(specialistsData);
         };
-
         fetchPosts();
     }, []);
 
@@ -86,24 +84,27 @@ const Specialist = () => {
     return (
         <>
             <Navbar />
+            {
+                loading && <Loader />
+            }
             <div className='flex flex-col mt-[100px] ml-4 h-screen overflow-scroll'>
                 <div className='flex flex-col gap-1 mb-3'>
                     <Typography color='white' className='text-3xl font-bold font-inter'>
-                        {specialists[id].name}
+                        {currentSpecialist.name}
                     </Typography>
                     <Typography color='gray' className='text-white text-md font-inter'>
-                        {specialists[id].degree}
+                        {currentSpecialist.degree}
                     </Typography>
                 </div>
                 <div>
-                    <img src={docPhoto} alt="Specialist Photo" />
+                    <img src={currentSpecialist.photoSrc} alt="Specialist Photo" />
                 </div>
                 <div className='flex flex-col gap-1'>
                     <Typography color='white' className='mt-5 text-xl font-bold text-white font-inter'>
                         About
                     </Typography>
                     <Typography color='gray' className='text-sm font-inter w-[350px] text-white'>
-                        {specialists[id].about}
+                        {currentSpecialist.about}
                     </Typography>
                 </div>
                 <div className='flex flex-col gap-1'>
@@ -111,7 +112,7 @@ const Specialist = () => {
                         Qualifications
                     </Typography>
                     <Typography color='gray' className='text-sm font-inter w-[350px] text-white'>
-                        {specialists[id].qualifications}
+                        {currentSpecialist.qualifications}
                     </Typography>
                 </div>
                 <div className='flex flex-col gap-1'>
@@ -119,7 +120,7 @@ const Specialist = () => {
                         Books and Theises
                     </Typography>
                     <Typography color='gray' className='text-sm font-inter w-[350px] text-white'>
-                        {specialists[id].books}
+                        {currentSpecialist.books}
                     </Typography>
                 </div>
                 <div className='flex flex-col gap-1'>
@@ -129,9 +130,9 @@ const Specialist = () => {
                     <Typography color='gray' className='text-sm font-inter w-[350px] text-white'>
                         <ul>
                             <li onClick={handlePhoneClick} style={{ cursor: 'pointer' }}>
-                                Phone Number: {specialists[id].phone}
+                                Phone Number: {currentSpecialist.phone}
                             </li>
-                            <li>Email: {specialists[id].email} </li>
+                            <li>Email: {currentSpecialist.email} </li>
                         </ul>
                     </Typography>
                 </div>

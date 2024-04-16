@@ -14,7 +14,6 @@ const Login = () => {
         if (user.user) {
             navigate("/landing");
         }
-
     }, []);
 
     return (
@@ -23,12 +22,10 @@ const Login = () => {
                 baseTheme: dark,
                 elements: {
                     rootBox: "w-full h-screen flex flex-col justify-center items-center gap-6",
-                    footerAction: "hidden",
                 }
             }}
                 redirectUrl="/landing"
-                afterSignUpUrl="/landing"
-                afterSignInUrl="/landing"
+                signUpUrl="/signup"
             />
         </>
     );

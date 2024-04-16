@@ -5,10 +5,9 @@ import './Cal.css';
 import { Button } from '@material-tailwind/react';
 import { Typography } from '@material-tailwind/react';
 import { motion } from 'framer-motion';
-// import Welcom from './Welcom';
 import { useNavigate } from 'react-router-dom';
 import Appbar from '../appbar/Appbar';
-import { collection, addDoc,  getDocs} from "firebase/firestore"; 
+import { collection, addDoc, getDocs, doc, getDoc } from "firebase/firestore";
 import { db } from '../FirebaseSDK';
 
 const Cal = () => {
@@ -19,13 +18,6 @@ const Cal = () => {
   const [events, setEvents] = useState([]);
   const navigate = useNavigate();
 
-  // handleEventNotes = () => {
-  //   return (
-  //     <>
-  //       <Notes date = {date} text={eventText} title= {eventTitle}  />
-  //     </>
-  //   )
-  // }
   const onChange = (newDate) => {
     setDate(newDate);
     setSelectedDate(newDate);
@@ -62,15 +54,12 @@ const Cal = () => {
       setEvents(events);
     };
 
-    console.log('events',events);
-  
     fetchEvents();
   }, []);
 
   return (
     <>
-      {/* <Welcom /> */}
-      <div className='flex flex-col pb-20 gap-10 m-7 md:mx-60'>
+      <div className='flex flex-col gap-10 pb-20 m-7 md:mx-60'>
         <motion.div className='flex flex-col gap-2'
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -83,7 +72,7 @@ const Cal = () => {
           <Calendar className="" onChange={onChange} value={date} />
         </div>
         {selectedDate && (
-          <div className="event-form flex justify-center">
+          <div className="flex justify-center event-form">
             <label>
               <div className='flex flex-col items-start gap-4'>
                 <p className='flex-1 mt-2 text-white'>For Event at {selectedDate.toDateString()} :</p>
@@ -125,16 +114,15 @@ const Cal = () => {
                   <li id='event' className='pt-4' key={index}>
                     <div className='flex text-black bg-white rounded-lg w-80' id='td' onClick={() => navigate(`/notes/${event.date}/${event.title}/${event.text}`)}>
                       <div className='w-1/4 p-2 text-white bg-cyan-600' id='edate'>
-                        <p className='pt-1 font-normal' >{event.date}</p>
+                        <p className='pt-1 font-normal' >{new Date(event.date).toDateString()}</p>
                       </div>
                       <div className='flex flex-col items-start'>
-                        <div className='items-start flex-1 pt-3 pl-3 text-lg text-start font-medium' id='etitle'>
-                          <p>{event.title.length>24? `${event.title.substring(0, 25)}..` : event.title}</p>
+                        <div className='items-start flex-1 pt-3 pl-3 text-lg font-medium text-start' id='etitle'>
+                          <p>{event.title.length > 24 ? `${event.title.substring(0, 25)}..` : event.title}</p>
                         </div>
                         <div className='items-start pl-3 mb-3 text-sm font-medium text-gray-500 flex-2 ' id='etext'>
                           <p>{event.text.length > 24 ? `${event.text.substring(0, 25)}..` : event.text}</p>
                         </div>
-                        {/* <Notes date = {date} text={eventText} title= {eventTitle}  /> */}
                       </div>
                     </div>
                   </li>

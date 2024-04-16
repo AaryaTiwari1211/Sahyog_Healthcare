@@ -7,7 +7,6 @@ import Appbar from '../components/appbar/Appbar';
 import ReactMarkdown from 'react-markdown';
 import { collection, addDoc } from "firebase/firestore";
 
-
 const MODEL_NAME = "gemini-pro-vision";
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
@@ -29,19 +28,19 @@ export const MedMatch = () => {
     const safetySettings = [
         {
             category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-            threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            threshold: HarmBlockThreshold.BLOCK_NONE,
         },
         {
             category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-            threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            threshold: HarmBlockThreshold.BLOCK_NONE,
         },
         {
             category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-            threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            threshold: HarmBlockThreshold.BLOCK_NONE,
         },
         {
             category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-            threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            threshold: HarmBlockThreshold.BLOCK_NONE,
         },
     ];
 
@@ -94,8 +93,6 @@ export const MedMatch = () => {
         run(files);
     }
 
-
-
     return (
         <>
             {loading && (
@@ -106,7 +103,7 @@ export const MedMatch = () => {
                     </Typography>
                 </div>
             )}
-            <div className="md:mx-60 flex flex-col font-inter items-center justify-center h-screen text-white p-10 gap-10">
+            <div className="flex flex-col items-center justify-center gap-10 p-3 my-16 mt-10 text-white md:mx-60 font-inter">
                 {response === "" ? (
                     <>
                         <div {...getRootProps({ className: 'dropzone flex flex-col items-center gap-5 justify-center w-full h-64 p-4 text-white border-2 border-gray-600 border-dashed rounded-xl' })}>
@@ -119,10 +116,14 @@ export const MedMatch = () => {
                         <Button className='text-color1 bg-color3 font-inter' fullWidth onClick={handleAutomate}>lets get rollin</Button>
                     </>) : (
                     <>
-                        <div className='bg-color3 p-5 rounded-xl text-lg'>
-                            <ReactMarkdown>{response}</ReactMarkdown>
-
-                        </div>
+                        <>
+                            <Typography className='text-2xl font-bold font-inter'>
+                                Summary
+                            </Typography>
+                            <div className='p-5 text-lg bg-color3 rounded-xl'>
+                                <ReactMarkdown>{response}</ReactMarkdown>
+                            </div>
+                        </>
                     </>
                 )}
             </div >
