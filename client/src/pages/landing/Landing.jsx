@@ -67,7 +67,7 @@ const Landing = () => {
                     <div className='flex items-center gap-5 jusitfy-center'>
                         {
                             specialists.map((specialist, index) => (
-                                <PersonCard key={index} photoSrc={portrait} id={index} name={specialist.name} degree={specialist.degree} clickFunc={clickhandler} />
+                                <PersonCard key={index} photoSrc={portrait} id={specialist.id} name={specialist.name} degree={specialist.degree} clickFunc={clickhandler} />
                             ))
                         }
                     </div>

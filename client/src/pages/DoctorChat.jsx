@@ -8,7 +8,7 @@ import { useUser } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 
 const OutgoingMessage = ({ message }) => (
-    <div className="flex w-32 p-2 my-2 ml-auto text-xl bg-blue-500 rounded-md outgoing-message font-inter max-w-content">
+    <div className="flex w-fit px-3 py-1 my-2 ml-auto text-xl bg-blue-500 rounded-md outgoing-message font-inter max-w-content">
         {message.text}
     </div>
 );
@@ -90,7 +90,6 @@ const DoctorChat = () => {
                         <h2 className="mb-2 text-2xl font-semibold text-center whitespace-nowrap">{receiver?.name}</h2>
                         <p className='mb-2 text-2xl font-semibold text-center' onClick={() => navigate('/landing')}>Back</p>
                     </div>
-
                     {messages.map((message, index) => (
                         message.sender === sender ? (
                             <OutgoingMessage key={index} message={message} />

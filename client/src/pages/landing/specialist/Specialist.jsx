@@ -1,27 +1,56 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import Navbar from '../../../components/Navbar';
 import Appbar from '../../../components/appbar/Appbar';
-import docPhoto from '../../../assets/doctor.png';
-import { Button } from "@material-tailwind/react";
-import { Typography } from '@material-tailwind/react';
-import { doc, getDoc, getDocs, collection, setDoc, addDoc } from 'firebase/firestore';
-import { db } from '../../../components/FirebaseSDK'
-import { useNavigate } from 'react-router-dom';
+import { Button, Typography } from "@material-tailwind/react";
+import { doc, getDoc, getDocs, collection, addDoc } from 'firebase/firestore';
+import { db } from '../../../components/FirebaseSDK';
 import Loader from '../../../components/Loader';
 import { useUser } from '@clerk/clerk-react';
 
 const Specialist = () => {
     const [specialists, setSpecialists] = useState([]);
-    const [currentSpecialist, setCurrentSpecialist] = useState({});
+    const [currentSpecialist, setCurrentSpecialist] = useState(null);
     const [chats, setChats] = useState([]);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const { id } = useParams();
-    const handlePhoneClick = () => {
-        const phoneNumber = '1234567890'; // Replace with the actual phone number
-        window.location.href = `tel:${phoneNumber}`;
-    };
     const user = useUser();
+
+    const handlePhoneClick = () => {
+        const phoneNumber = currentSpecialist?.phone;
+        if (phoneNumber) {
+            window.location.href = `tel:${phoneNumber}`;
+        }
+    };
+
+    const handleOnChat = async () => {
+        try {
+            console.log('User:', user.user.id);
+            console.log('Current Specialist:', currentSpecialist.id);
+            if (!currentSpecialist || !user.user) return;
+    
+            const filteredChats = chats.filter(chat => chat.users.includes(currentSpecialist.id));
+            if (filteredChats.length > 0) {
+                const existingChatId = filteredChats[0].id;
+                navigate(`/chat/${existingChatId}`);
+            } else {
+                const chatDocRef = await addDoc(collection(db, 'chats'), {
+                    users: [user.user.id, currentSpecialist.id],
+                    messages: [],
+                });
+                console.log('Chat created with ID:', chatDocRef.id);
+                navigate(`/chat/${chatDocRef.id}`);
+            }
+        } catch (error) {
+            console.error('Error creating or checking chat:', error.message);
+        }
+    };
+
+    const handleOnClick = () => {
+        const text = "Hi, I want to book an appointment can you please let me know if it's possible and also the details.";
+        window.open(`https://wa.me/7999250587?text=${encodeURIComponent(text)}`, "_blank");
+    };
 
     useEffect(() => {
         const fetchChats = async () => {
@@ -30,63 +59,39 @@ const Specialist = () => {
             setChats(chatsData);
         };
         fetchChats();
-    }, [])
-
-    const handleOnChat = async () => {
-        try {
-            console.log(currentSpecialist.uid , user.user.id);
-            const filteredChats = chats.filter(chat => {
-                const chatUsers = chat.users;
-                return chatUsers.includes(currentSpecialist.uid);
-            });
-            console.log('Filtered chats:', filteredChats);
-            if (filteredChats.length > 0) {
-                const existingChatId = filteredChats[0].id;
-                console.log('Chat already exists. Redirecting to existing chat:', existingChatId);
-                navigate(`/chat/${existingChatId}`);
-            } else {
-                const chatDocRef = await addDoc(collection(db, 'chats'), {
-                    users: [user.user.id, currentSpecialist.uid],
-                    messages: [],
-                });
-                console.log('New chat created with ID:', chatDocRef.id);
-                navigate(`/chat/${chatDocRef.id}`);
-            }
-            return filteredChats; // Return the filtered chats array
-        } catch (error) {
-            console.error('Error creating or checking chat:', error.message);
-        }
-    };
-
-    const handleOnClick = () => {
-        const text = "Hi, I want to book an appointment can you please let me know if its possible and also the details."
-        window.open(`https://wa.me/7999250587?text=${encodeURIComponent(text)}`, "_blank");
-    }
-
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchPosts = async () => {
-            setLoading(true);
-            const specialistDocRef = doc(db, 'specialists', id);
-            const specialistDoc = await getDoc(specialistDocRef);
-            console.log('Specialist doc:', specialistDoc);
-            setCurrentSpecialist(specialistDoc.data());
-            setLoading(false);
-        };
-        fetchPosts();
     }, []);
 
+    useEffect(() => {
+        const fetchSpecialist = async () => {
+            setLoading(true);
+            try {
+                const specialistDocRef = doc(db, 'specialists', id);
+                const specialistDoc = await getDoc(specialistDocRef);
+                if (specialistDoc.exists()) {
+                    setCurrentSpecialist({ id: specialistDoc.id, ...specialistDoc.data() });
+                } else {
+                    console.log("No such document!");
+                }
+            } catch (error) {
+                console.error("Error fetching specialist:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchSpecialist();
+    }, [id]);
+
     if (loading) {
-        return <div>Loading...</div>;
+        return <Loader />;
+    }
+
+    if (!currentSpecialist) {
+        return <div>No specialist data found.</div>;
     }
 
     return (
         <>
             <Navbar />
-            {
-                loading && <Loader />
-            }
             <div className='flex flex-col mt-[100px] ml-4 h-screen overflow-scroll'>
                 <div className='flex flex-col gap-1 mb-3'>
                     <Typography color='white' className='text-3xl font-bold font-inter'>
@@ -117,7 +122,7 @@ const Specialist = () => {
                 </div>
                 <div className='flex flex-col gap-1'>
                     <Typography color='white' className='mt-5 text-xl font-bold text-white font-inter'>
-                        Books and Theises
+                        Books and Theses
                     </Typography>
                     <Typography color='gray' className='text-sm font-inter w-[350px] text-white'>
                         {currentSpecialist.books}
@@ -137,7 +142,7 @@ const Specialist = () => {
                     </Typography>
                 </div>
                 <div className='w-full'>
-                    <div className='flex justify-between gap-3 mt-5 mr-5 mb-28'  >
+                    <div className='flex justify-between gap-3 mt-5 mr-5 mb-28'>
                         <Button className='border-2 border-[#65ADE1]' variant='outlined' size='sm' onClick={handleOnClick}>
                             <div className='text-white'>
                                 Book an Appointment
