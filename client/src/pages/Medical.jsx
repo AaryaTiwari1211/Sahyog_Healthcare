@@ -1,41 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button, Spinner, Typography } from '@material-tailwind/react';
 import { FaUpload, FaFilePdf, FaFileWord } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { useDropzone } from 'react-dropzone';
 import { TiDelete } from "react-icons/ti";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage, db } from '../components/FirebaseSDK';
 import { doc, setDoc } from 'firebase/firestore';
 import { useUser } from '@clerk/clerk-react';
 
-const DropBox = ({ onFilesDrop, onDeleteFile }) => {
-    const [previewImages, setPreviewImages] = useState([]);
-    const [hasFiles, setHasFiles] = useState(false);
+const DropBox = ({ onFileChange, onDeleteFile }) => {
+    const [previewImage, setPreviewImage] = useState(null);
+    const [hasFile, setHasFile] = useState(false);
 
-    const handleDeleteFile = (index) => {
-        const updatedFiles = [...previewImages];
-        updatedFiles.splice(index, 1);
-        setPreviewImages(updatedFiles);
-        onDeleteFile(updatedFiles.map((file) => file.file));
-        setHasFiles(updatedFiles.length > 0);
-    }
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const preview = getFileIcon(file.type) || URL.createObjectURL(file);
+            setPreviewImage({ file, preview });
+            setHasFile(true);
+            onFileChange(file);
+        }
+    };
 
-    const { getRootProps, getInputProps } = useDropzone({
-        accept: 'application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        onDrop: (acceptedFiles) => {
-            const previewImagesArray = acceptedFiles.map((file) => {
-                return {
-                    file,
-                    preview: getFileIcon(file.type) || URL.createObjectURL(file),
-                };
-            });
-            setPreviewImages([...previewImages, ...previewImagesArray]);
-            setHasFiles(true);
-            onFilesDrop([...previewImages, ...previewImagesArray].map((file) => file.file));
-        },
-        multiple: true,
-    });
+    const handleDeleteFile = () => {
+        setPreviewImage(null);
+        setHasFile(false);
+        onDeleteFile(null);
+    };
 
     const getFileIcon = (fileType) => {
         if (fileType.includes('pdf')) {
@@ -47,83 +38,86 @@ const DropBox = ({ onFilesDrop, onDeleteFile }) => {
     };
 
     return (
-        <>
-            <div
-                {...getRootProps()}
-                className="flex flex-col-reverse gap-5 justify-center items-center rounded-[15px] w-full shadow-xl h-[250px] cursor-pointer border-2 border-dashed border-gray-800 overflow-auto"
-            >
-                <input {...getInputProps()} />
-                <Typography className="text-lg font-bold text-color1 font-inter">
-                    Diagnostic Details
-                </Typography>
+        <div className="flex flex-col items-center gap-5 justify-center rounded-[15px] w-full shadow-xl h-[250px] cursor-pointer border-2 border-dashed border-gray-800 overflow-auto">
+            <input
+                type="file"
+                onChange={handleFileChange}
+                className="hidden"
+                id="fileUpload"
+                accept="application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            />
+            <label htmlFor="fileUpload" className="cursor-pointer flex flex-col items-center">
                 <div className="flex flex-row items-center gap-2 overflow-auto">
-                    {previewImages.map((image, index) => (
-                        <div key={index} className="relative cursor-pointer">
+                    {previewImage ? (
+                        <div className="relative cursor-pointer">
                             <button
-                                onClick={() => handleDeleteFile(index)}
+                                onClick={handleDeleteFile}
                                 className="absolute top-[-10px] right-0 z-50 text-white"
                             >
                                 <TiDelete color='red' fontSize={20} />
                             </button>
-                            {image.preview === 'pdf' ? (
+                            {previewImage.preview === 'pdf' ? (
                                 <FaFilePdf className="text-4xl text-white" />
-                            ) : image.preview === 'word' ? (
+                            ) : previewImage.preview === 'word' ? (
                                 <FaFileWord className="text-4xl text-white" />
                             ) : (
                                 <img
-                                    src={image.preview}
-                                    alt={`Uploaded ${index + 1}`}
+                                    src={previewImage.preview}
+                                    alt="Uploaded"
                                     style={{ width: '80px', height: '80px', borderRadius: '10px' }}
                                 />
                             )}
                         </div>
-                    ))}
-                    <div className="cursor-pointer">
-                        {previewImages.length === 0 && <FaUpload className="text-4xl text-white" />}
-                    </div>
+                    ) : (
+                        <FaUpload className="text-4xl text-white" />
+                    )}
                 </div>
-            </div>
-        </>
+                <Typography className="text-lg font-bold text-color1 font-inter">
+                    Diagnostic Details
+                </Typography>
+            </label>
+            {hasFile && (
+                <Button color="red" onClick={handleDeleteFile}>
+                    Remove File
+                </Button>
+            )}
+        </div>
     );
 };
 
 const Medical = () => {
-    const [hasFiles, setHasFiles] = useState(false);
+    const [hasFile, setHasFile] = useState(false);
     const [loadingfb, setLoadingFB] = useState(false);
-    const [files, setFiles] = useState([]);
-    const [urls, setUrls] = useState([]);
+    const [file, setFile] = useState(null);
+    const [url, setUrl] = useState('');
     const navigate = useNavigate();
     const user = useUser();
 
-    const handleDrop = (acceptedFiles) => {
-        console.log('Files accepted: ', acceptedFiles);
-        setFiles(acceptedFiles);
-        setHasFiles(true);
+    const handleFileChange = (selectedFile) => {
+        setFile(selectedFile);
+        setHasFile(Boolean(selectedFile));
     };
 
-    const handleDeleteFile = (updatedFiles) => {
-        setHasFiles(updatedFiles.length > 0);
+    const handleDeleteFile = () => {
+        setFile(null);
+        setHasFile(false);
     };
 
     const handleRecordsSubmit = async () => {
+        if (!file) return;
+
         setLoadingFB(true);
-        for (let i = 0; i < files.length; i++) {
-            const storageRef = ref(storage, `${user.user.id}/medical-records/${files[i].name}`);
-            await uploadBytes(storageRef, files[i]).then((snapshot) => {
-                console.log('Uploaded a blob or file!', snapshot);
-            });
-            const url = await getDownloadURL(ref(storage, `${user.user.id}/medical-records/${files[i].name}`));
-            console.log("Url is: ", url);
-            setUrls((prevUrls) => [...prevUrls, url]);
-            console.log("Urls are: ", urls);
-        }
+        const storageRef = ref(storage, `${user.user.id}/medical-records/${file.name}`);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+        setUrl(url);
+
         const userRef = doc(db, 'users', user.user.id);
-        await setDoc(userRef, { medicalRecords: urls }, { merge: true });
+        await setDoc(userRef, { medicalRecords: url }, { merge: true });
+
         setLoadingFB(false);
-        console.log(urls);
-        console.log('Medical Records Uploaded');
         navigate('/details');
-    }
+    };
 
     return (
         <>
@@ -147,14 +141,14 @@ const Medical = () => {
                     </Typography>
                 </div>
                 <div className="flex flex-col gap-4">
-                    <DropBox onFilesDrop={handleDrop} onDeleteFile={handleDeleteFile} />
+                    <DropBox onFileChange={handleFileChange} onDeleteFile={handleDeleteFile} />
                     <div className='flex justify-between'>
                         <Button
                             type="submit"
                             color="blue"
                             className="text-white"
-                            onClick={() => handleRecordsSubmit()}
-                            disabled={!hasFiles}
+                            onClick={handleRecordsSubmit}
+                            disabled={!hasFile}
                         >
                             Submit
                         </Button>

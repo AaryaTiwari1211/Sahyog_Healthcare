@@ -1,32 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button, Typography, Spinner } from '@material-tailwind/react';
 import { FaUpload, FaFilePdf, FaFileWord } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { useDropzone } from 'react-dropzone';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage, db } from '../components/FirebaseSDK';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { useUser } from '@clerk/clerk-react';
 
-const DropBox = ({ onFilesDrop }) => {
-    const [previewImages, setPreviewImages] = useState([]);
-    const [hasFiles, setHasFiles] = useState(false);
+const DropBox = ({ onFileChange }) => {
+    const [previewImage, setPreviewImage] = useState(null);
+    const [hasFile, setHasFile] = useState(false);
 
-    const { getRootProps, getInputProps } = useDropzone({
-        accept: 'image/*, video/*, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        onDrop: (acceptedFiles) => {
-            const previewImagesArray = acceptedFiles.map((file) => {
-                return {
-                    file,
-                    preview: getFileIcon(file.type) || URL.createObjectURL(file),
-                };
-            });
-            setPreviewImages([...previewImages, ...previewImagesArray]);
-            setHasFiles(true);
-            onFilesDrop(acceptedFiles);
-        },
-        multiple: true,
-    });
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const preview = getFileIcon(file.type) || URL.createObjectURL(file);
+            setPreviewImage({ file, preview });
+            setHasFile(true);
+            onFileChange(file);
+        }
+    };
+
+    const handleRemoveFile = () => {
+        setPreviewImage(null);
+        setHasFile(false);
+        onFileChange(null);
+    };
 
     const getFileIcon = (fileType) => {
         if (fileType.includes('pdf')) {
@@ -38,73 +37,80 @@ const DropBox = ({ onFilesDrop }) => {
     };
 
     return (
-        <div
-            {...getRootProps()}
-            className="flex flex-col items-center gap-5 justify-center rounded-[15px] w-full shadow-xl h-[250px] cursor-pointer border-2 border-dashed border-gray-800 overflow-auto"
-        >
-            <input {...getInputProps()} />
-            <div className="flex flex-row items-center gap-2 overflow-auto">
-                {previewImages.map((image, index) => (
-                    <div key={index} className="cursor-pointer">
-                        {image.preview === 'pdf' ? (
-                            <FaFilePdf className="text-4xl text-white" />
-                        ) : image.preview === 'word' ? (
-                            <FaFileWord className="text-4xl text-white" />
-                        ) : (
-                            <img
-                                src={image.preview}
-                                alt={`Uploaded ${index + 1}`}
-                                style={{ width: '80px', height: '80px', borderRadius: '10px' }}
-                            />
-                        )}
-                    </div>
-                ))}
-                <div className="cursor-pointer">
-                    {previewImages.length === 0 && <FaUpload className="text-4xl text-white" />}
+        <div className="flex flex-col items-center gap-5 justify-center rounded-[15px] w-full shadow-xl h-[250px] cursor-pointer border-2 border-dashed border-gray-800 overflow-auto">
+            <input 
+                type="file" 
+                onChange={handleFileChange} 
+                className="hidden"
+                id="fileUpload"
+                accept="image/*, video/*, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            />
+            <label htmlFor="fileUpload" className="cursor-pointer flex flex-col items-center">
+                <div className="flex flex-row items-center gap-2 overflow-auto">
+                    {previewImage ? (
+                        <div className="cursor-pointer">
+                            {previewImage.preview === 'pdf' ? (
+                                <FaFilePdf className="text-4xl text-white" />
+                            ) : previewImage.preview === 'word' ? (
+                                <FaFileWord className="text-4xl text-white" />
+                            ) : (
+                                <img
+                                    src={previewImage.preview}
+                                    alt="Uploaded"
+                                    style={{ width: '80px', height: '80px', borderRadius: '10px' }}
+                                />
+                            )}
+                        </div>
+                    ) : (
+                        <FaUpload className="text-4xl text-white" />
+                    )}
                 </div>
-            </div>
-            <Typography className="text-lg font-bold text-color2 font-inter">
-                Health Insurance Details
-            </Typography>
-            <Typography className="text-sm font-bold text-gray-300 font-inter">
-                PDF / Word / Images (Max 32MB)
-            </Typography>
+                <Typography className="text-lg font-bold text-color2 font-inter">
+                    Health Insurance Details
+                </Typography>
+                <Typography className="text-sm font-bold text-gray-300 font-inter">
+                    PDF / Word / Images (Max 32MB)
+                </Typography>
+            </label>
+            {hasFile && (
+                <Button color="red" onClick={handleRemoveFile}>
+                    Remove File
+                </Button>
+            )}
         </div>
     );
 };
 
 const HealthInsur = () => {
-    const [hasFiles, setHasFiles] = useState(false);
+    const [hasFile, setHasFile] = useState(false);
     const [loadingfb, setLoadingFB] = useState(false);
     const navigate = useNavigate();
-    const [files, setFiles] = useState([]);
-    const [urls, setUrls] = useState([]);
+    const [file, setFile] = useState(null);
+    const [url, setUrl] = useState('');
     const user = useUser();
 
-    const handleDrop = (acceptedFiles) => {
-        console.log('Files accepted: ', acceptedFiles);
-        setFiles(acceptedFiles);
-        setHasFiles(true);
+    const handleFileChange = (selectedFile) => {
+        setFile(selectedFile);
+        setHasFile(Boolean(selectedFile));
     };
 
     const handleInsuranceSubmit = async () => {
+        if (!file) return;
+        const userDoc = doc(db, 'users', user.user.id);
         setLoadingFB(true);
-        for (let i = 0; i < files.length; i++) {
-            const storageRef = ref(storage, `${user.user.id}/health-insurance/${files[i].name}`);
-            await uploadBytes(storageRef, files[i]).then((snapshot) => {
-                console.log('Uploaded a blob or file!', snapshot);
-            });
-            const url = await getDownloadURL(ref(storage, `${user.user.id}/health-insurance/${files[i].name}`));
-            console.log("Url is: ", url);
-            setUrls((prevUrls) => [...prevUrls, url]);
-        }
-        const userRef = doc(db, 'users', user.user.id);
-        await setDoc(userRef, {
-            healthInsurance: [...urls]
+        const storageRef = ref(storage, `${user.user.id}/health-insurance/${file.name}`);
+        await uploadBytes(storageRef, file).then((snapshot) => {
+            console.log('Uploaded a blob or file!', snapshot);
+        });
+        const url = await getDownloadURL(storageRef);
+        setUrl(url);
+        console.log("Url is: ", url);
+
+        await setDoc(userDoc, {
+            healthInsurance: url
         }, { merge: true });
+
         setLoadingFB(false);
-        console.log("Urls are: ", urls);
-        console.log('HealthInsurance Uploaded');
         navigate('/details');
     }
 
@@ -119,22 +125,20 @@ const HealthInsur = () => {
                 </div>
             )}
             <div className="flex flex-col gap-24 my-10 mx-7 md:mx-60">
-                <div
-                    className="flex flex-col gap-2"
-                >
+                <div className="flex flex-col gap-2">
                     <Typography className="text-3xl font-bold text-color1 font-inter">
                         Please upload your Health Insurance Details
                     </Typography>
                 </div>
                 <div className="flex flex-col gap-10">
-                    <DropBox onFilesDrop={handleDrop} />
+                    <DropBox onFileChange={handleFileChange} />
                     <div className='flex justify-between'>
                         <Button
                             type="submit"
                             color="blue"
                             className="text-white"
                             onClick={handleInsuranceSubmit}
-                            disabled={!hasFiles}
+                            disabled={!hasFile}
                         >
                             Submit
                         </Button>

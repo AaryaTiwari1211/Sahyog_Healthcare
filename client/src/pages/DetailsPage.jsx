@@ -20,28 +20,25 @@ const DetailButton = ({ text, onClick, uploaded = false }) => {
 
 const DetailsPage = () => {
     const navigate = useNavigate();
+    const [basicInfo , setBasicInfo] = useState(false);
     const [uploadedMedicalDetails, setUploadedMedicalDetails] = useState(false);
-    const [uploadedHealthInsur, setUploadedHealthInsur] = useState(false);
+    const [uploadedHealthInsurance, setUploadedHealthInsurance] = useState(false);
     const user = useUser();
     useEffect(() => {
         const fetchUserData = async () => {
             const userDocRef = doc(db, 'users', user.user.id);
             const docSnap = await getDoc(userDocRef);
-            if (docSnap.exists()) {
-                if (docSnap.data().medicalRecords) {
-                    setUploadedMedicalDetails(true);
-                    console.log('Medical Details are Uploaded');
-                }
-                if (docSnap.data().healthInsurance) {
-                    setUploadedHealthInsur(true);
-                    console.log('Health Insurance Details are Uploaded');
-                }
-                if (docSnap.data().name && docSnap.data().age && docSnap.data().uid) {
-                    console.log('Basic Info is Uploaded');
-                }
+            if(docSnap.data().name && docSnap.data().email && docSnap.data().phone && docSnap.data().age)
+            {
+                setBasicInfo(true);
+            } 
+            if (docSnap.data().medicalRecords.length > 0)
+            {
+                setUploadedMedicalDetails(true);
             }
-            else {
-                console.log('No user data found');
+            if(docSnap.data().healthInsurance.length > 0)
+            {
+                setUploadedHealthInsurance(true);
             }
         }
         if (user.user) {
@@ -60,7 +57,7 @@ const DetailsPage = () => {
                     <Typography color='blue' className='font-inter'>So tell us about yourself !!</Typography>
                 </motion.div>
                 <div className='flex flex-col gap-8'>
-                    <DetailButton text='Basic Medical Details' onClick={() => navigate('/basicinfo')} />
+                    <DetailButton text='Basic Medical Details' onClick={() => navigate('/basicinfo')} uploaded={basicInfo} />
                     <DetailButton text='Previous Diagnostic records' onClick={() => navigate('/medicaldetails')} uploaded={uploadedMedicalDetails} />
                     <DetailButton text='Health Insurance Details' onClick={() => navigate('/healthinsurance')} uploaded={uploadedMedicalDetails} />
                     <Button variant="outlined" color='white' className="bg-blue-500 font-inter text-md" onClick={() => navigate('/landing')}>Skip</Button>

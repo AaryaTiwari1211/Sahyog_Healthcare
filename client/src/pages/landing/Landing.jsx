@@ -13,7 +13,7 @@ import { collection, getDoc, setDoc, getDocs, doc, addDoc } from 'firebase/fires
 
 const PersonCard = ({ photoSrc, id, name, degree, clickFunc }) => {
     return (
-        <div className="flex flex-col items-center w-screen " onClick={() => clickFunc(id, name, degree, photoSrc)}>
+        <div className="flex flex-col items-center w-full" onClick={() => clickFunc(id, name, degree, photoSrc)}>
             <div className="w-16 h-16 overflow-hidden border-2 border-blue-100 rounded-full">
                 <img src={photoSrc} alt="Person Photo" className="object-cover w-full h-full" />
             </div>
@@ -44,7 +44,23 @@ const Landing = () => {
             setSpecialists(specialistsData);
             console.log(specialistsData);
         }
+        const addUser = async () => {
+            console.log(user.user);
+            const userDocRef = doc(db, 'users', user.user.id);
+            const docSnap = await getDoc(userDocRef);
+            if (!docSnap.exists()) {
+                await setDoc(userDocRef, {
+                    name: user.user.fullName,
+                    email: user.user.primaryEmailAddress.emailAddress,
+                    id: user.user.id,
+                    medicalRecords: "",
+                    healthInsurance: "",
+                    age: "",
+                });
+            }   
+        }
         if (user.user) {
+            addUser();
             fetchSpecialists();
         }
     }, [])
@@ -52,7 +68,7 @@ const Landing = () => {
     return (
         <div className='flex flex-col'>
             <Navbar />
-            <div className='flex flex-col gap-16 mx-4 mt-10'>
+            <div className='flex flex-col gap-16 mx-4 mt-10 '>
                 <div className='flex flex-col gap-5' />
                 <div className='flex flex-col gap-5'>
                     <Typography color='white' className='text-3xl font-bold font-inter'>For You</Typography>
@@ -64,7 +80,7 @@ const Landing = () => {
                 </div>
                 <div className='flex flex-col gap-4'>
                     <Typography color='white' className='mb-3 text-3xl font-bold font-inter'>Talk to a Specialist</Typography>
-                    <div className='flex items-center gap-5 jusitfy-center'>
+                    <div className='grid lg:grid-cols-4 md:grid-cols-3 xs:grid-cols-2 gap-5'>
                         {
                             specialists.map((specialist, index) => (
                                 <PersonCard key={index} photoSrc={portrait} id={specialist.id} name={specialist.name} degree={specialist.degree} clickFunc={clickhandler} />

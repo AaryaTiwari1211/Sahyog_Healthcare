@@ -7,8 +7,9 @@ import { Typography } from '@material-tailwind/react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Appbar from '../appbar/Appbar';
-import { collection, addDoc, getDocs, doc, getDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, doc, getDoc, query, where } from "firebase/firestore";
 import { db } from '../FirebaseSDK';
+import { useUser } from '@clerk/clerk-react';
 
 const Cal = () => {
   const [date, setDate] = useState(new Date());
@@ -17,6 +18,7 @@ const Cal = () => {
   const [eventTitle, setEventTitle] = useState('');
   const [events, setEvents] = useState([]);
   const navigate = useNavigate();
+  const user = useUser();
 
   const onChange = (newDate) => {
     setDate(newDate);
@@ -29,6 +31,7 @@ const Cal = () => {
         date: selectedDate.toDateString(),
         title: eventTitle,
         text: eventText,
+        user: user?.user?.id
       };
 
       try {
@@ -49,11 +52,12 @@ const Cal = () => {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const querySnapshot = await getDocs(collection(db, "events"));
-      const events = querySnapshot.docs.map(doc => doc.data());
-      setEvents(events);
+      const eventsRef = collection(db, 'events');
+      const q = query(eventsRef , where("user", "==", user?.user?.id));
+      const querySnapshot = await getDocs(q);
+      const eventsData = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+      setEvents(eventsData);
     };
-
     fetchEvents();
   }, []);
 

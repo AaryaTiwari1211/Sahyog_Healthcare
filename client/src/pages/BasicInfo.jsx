@@ -39,7 +39,7 @@ const BasicInfo = () => {
         else {
             setIsFormValid(false);
         }
-    }, [userName, userEmail, userGender, userPhone, userAge]);
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -57,6 +57,7 @@ const BasicInfo = () => {
                 age: userAge,
             }, { merge: true });
             console.log('Basic Info Uploaded');
+            navigate('/details');
             setLoading(false);
         }
         catch (error) {
