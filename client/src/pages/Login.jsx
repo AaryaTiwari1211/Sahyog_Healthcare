@@ -17,7 +17,9 @@ const Login = () => {
     }, []);
 
     return (
-        <>
+        <div className="flex flex-col justify-center items-center">
+            <span>Welcome to Sahyog</span>
+            <span>Please Login in to Continue</span>
             <SignIn path="/login" appearance={{
                 baseTheme: dark,
                 elements: {
@@ -25,9 +27,11 @@ const Login = () => {
                 }
             }}
                 redirectUrl="/landing"
+                forceRedirectUrl="/landing" // Redirects to landing page if user is already logged in
                 signUpUrl="/signup"
+                signupForceRedirectUrl="/landing"
             />
-        </>
+        </div>
     );
 };
 
