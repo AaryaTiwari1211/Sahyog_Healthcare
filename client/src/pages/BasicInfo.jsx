@@ -11,13 +11,12 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 const BasicInfo = () => {
     const user = useUser();
     const navigate = useNavigate();
-    const [isFormValid, setIsFormValid] = useState(false);
     const [loading, setLoading] = useState(false);
     const [userName, setUserName] = useState(user?.user?.fullName);
     const [userEmail, setUserEmail] = useState(user?.user?.primaryEmailAddress?.emailAddress);
     const [userGender, setUserGender] = useState("Male");
     const [userPhone, setUserPhone] = useState("");
-    const [userAge, setUserAge] = useState(78);
+    const [userAge, setUserAge] = useState(20);
     const [userDetails, setUserDetails] = useState(null);
 
     useEffect(() => {
@@ -32,12 +31,6 @@ const BasicInfo = () => {
         }
         if (user.user) {
             fetchUserData();
-        }
-        if (userName && userEmail && userGender && userPhone && userAge) {
-            setIsFormValid(true);
-        }
-        else {
-            setIsFormValid(false);
         }
     }, []);
 

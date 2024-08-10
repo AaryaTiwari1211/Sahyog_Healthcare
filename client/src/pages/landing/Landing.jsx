@@ -61,9 +61,9 @@ const Landing = () => {
         }
         if (user.user) {
             addUser();
-            fetchSpecialists();
         }
-    }, [])
+        fetchSpecialists();
+    }, []);
 
     return (
         <div className='flex flex-col'>
@@ -83,7 +83,7 @@ const Landing = () => {
                     <div className='grid lg:grid-cols-4 md:grid-cols-3 xs:grid-cols-2 gap-5'>
                         {
                             specialists.map((specialist, index) => (
-                                <PersonCard key={index} photoSrc={portrait} id={specialist.id} name={specialist.name} degree={specialist.degree} clickFunc={clickhandler} />
+                                <PersonCard key={index} photoSrc={specialist.photo ? specialist.photo : portrait} id={specialist.id} name={specialist.name} degree={specialist.degree} clickFunc={clickhandler} />
                             ))
                         }
                     </div>
