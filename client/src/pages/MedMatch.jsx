@@ -7,7 +7,7 @@ import Appbar from '../components/appbar/Appbar';
 import ReactMarkdown from 'react-markdown';
 import { collection, addDoc } from "firebase/firestore";
 
-const MODEL_NAME = "gemini-pro-vision";
+const MODEL_NAME = "gemini-1.5-flash";
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 export const MedMatch = () => {
